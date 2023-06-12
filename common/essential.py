@@ -1,3 +1,5 @@
+import sys
+import dotenv
 
 class essentials:
     def __init__(self, loop=None):
@@ -6,13 +8,11 @@ class essentials:
         self.do_essentials()
 
     def get_essentials(self):
-        import sys
         self.sys = sys
         try:
             if self.loop != None:
                 import nest_asyncio
                 self.nest_asyncio = nest_asyncio
-            import dotenv
             self.dotenv = dotenv
         except ImportError:
             print("Failed to import dependencies : essentials")

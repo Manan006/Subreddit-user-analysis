@@ -1,30 +1,31 @@
+from config import *
+import os
+import logging
+import logging.handlers
+import queue
+import typing
+try:
+    from .essential import essentials
+except ImportError:
+    import sys
+    sys.path.append("..")
+    from common.essential import essentials
 class logger:
     def __init__(self, name: str = __name__):
-        import os
-        import logging
-        import logging.handlers
-        import queue
-        import typing
         self.os = os
         self.logging = logging
         self.typing = typing
         self.queue = queue.Queue(-1)
         self.name = name
         self.queue_handler = self.logging.handlers.QueueHandler(self.queue)
-        try:
-            from .essential import essentials
-        except ImportError:
-            import sys
-            sys.path.append("..")
-            from common.essential import essentials
         self.essentials = essentials
         essentials()
         self.logging.basicConfig(level=self.logging.WARNING)
         try:
             logger = self.logging.getLogger(name)
-            if self.os.getenv("LOG_LEVEL") == "2":
+            if str(LOG_LEVEL) == "2":
                 level = self.logging.DEBUG
-            elif self.os.getenv("LOG_LEVEL") == "1":
+            elif str(LOG_LEVEL) == "1":
                 level = self.logging.INFO
             else:
                 level = self.logging.WARNING
@@ -32,13 +33,12 @@ class logger:
                 '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
             handlers = []
             logger.setLevel(level)
-            if None not in (self.os.getenv("LOG_FILE"), self.os.getenv("LOG_FLE_MAX_SIZE"), self.os.getenv("LOG_BACKUP_COUNT")):
-                handler = self.logging.FileHandler(
-                    self.os.getenv('LOG_FILE'), mode='w')
-                handler.setFormatter(formatter)
-                handler.setLevel(level)
-                handlers.append(handler)
-            if os.getenv("ENABLE_STREAM_HANDLER") == "1":
+            handler = self.logging.FileHandler(
+                LOG_FILE, mode='w')
+            handler.setFormatter(formatter)
+            handler.setLevel(level)
+            handlers.append(handler)
+            if ENABLE_STREAM_HANDLER == "1":
                 logger.propagate = True
             else:
                 logger.propagate = False

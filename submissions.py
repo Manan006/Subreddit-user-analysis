@@ -4,6 +4,8 @@ import aiomultiprocess as amp
 from datetime import datetime
 from typing import Tuple
 import time
+
+
 reddit = common.reddit()
 mariadb = common.mariadb()
 logger = common.logger("submissions")

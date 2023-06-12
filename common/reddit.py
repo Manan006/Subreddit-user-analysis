@@ -1,19 +1,17 @@
 import asyncpraw
 import asyncio
-
+from .essential import essentials
+from .logging import logger
+import os
 
 class reddit(asyncpraw.Reddit):
     def __init__(self) -> None:
-        from .essential import essentials
         self.essentials = essentials
         self.loop = asyncio.get_event_loop()
         essentials(self.loop)
         self.loop.run_until_complete(self.__ainit__())
 
     async def __ainit__(self) -> None:
-        from .logging import logger
-        import os
-
         self.logger = logger("reddit")
         self.os = os
         self.asyncpraw = asyncpraw

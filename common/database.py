@@ -2,7 +2,9 @@ import aiomysql
 from typing import Any, Callable, Union, List
 import asyncio
 from .logging import logger
-
+from .essential import essentials
+import functools
+import aiofiles
 
 class mariadb:
     def __init__(self, clean_tables: Union[None, List[str]] = []) -> None:
@@ -11,9 +13,7 @@ class mariadb:
             self.clean_tables = (clean_tables,)
         else:
             self.clean_tables = clean_tables
-        from .essential import essentials
-        import functools
-        import aiofiles
+
         self.essentials = essentials
         essentials(self.loop)
         self.functools = functools
