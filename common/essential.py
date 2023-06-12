@@ -1,7 +1,7 @@
 import sys
 import dotenv
 
-class essentials:
+class essentials: # Is considered essential for the bot to run
     def __init__(self, loop=None):
         self.loop = loop
         self.get_essentials()
@@ -20,9 +20,9 @@ class essentials:
 
     def do_essentials(self):
         try:
-            self.dotenv.load_dotenv()
+            self.dotenv.load_dotenv() # Load the .env file
             if self.loop != None:
-                self.nest_asyncio.apply(self.loop)
+                self.nest_asyncio.apply(self.loop) # Apply nest_asyncio patch to the loop
         except Exception as e:
             print(e)
             print("Failed to do essentials")

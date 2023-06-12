@@ -4,7 +4,7 @@ from .essential import essentials
 from .logging import logger
 import os
 
-class reddit(asyncpraw.Reddit):
+class reddit(asyncpraw.Reddit): # Manage reddit connection, inherits from asyncpraw.Reddit
     def __init__(self) -> None:
         self.essentials = essentials
         self.loop = asyncio.get_event_loop()
@@ -17,18 +17,18 @@ class reddit(asyncpraw.Reddit):
         self.asyncpraw = asyncpraw
         self.logger.info("Initializing reddit")
         try:
-            self.asyncpraw.Reddit.__init__(self,
-                                           client_id=self.os.getenv(
-                                               "CLIENT_ID"),
-                                           client_secret=self.os.getenv(
-                                               "CLIENT_SECRET"),
-                                           password=self.os.getenv(
-                                               "PASSWORD"),
-                                           user_agent=self.os.getenv(
-                                               "USER_AGENT"),
-                                           username=self.os.getenv(
-                                               "USERNAME"),
-                                           )
+            super().__init__(self,
+                            client_id=self.os.getenv(
+                                "CLIENT_ID"),
+                            client_secret=self.os.getenv(
+                                "CLIENT_SECRET"),
+                            password=self.os.getenv(
+                                "PASSWORD"),
+                            user_agent=self.os.getenv(
+                                "USER_AGENT"),
+                            username=self.os.getenv(
+                                "USERNAME"),
+                            )
         except Exception as e:
             self.logger.critical("Failed to initialize reddit")
             self.logger.exception(e)

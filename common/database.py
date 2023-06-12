@@ -5,11 +5,14 @@ from .logging import logger
 from .essential import essentials
 import functools
 import aiofiles
+import os
+import dotenv
+dotenv.load_dotenv()
 
-class mariadb:
+class mariadb: # Class which handles the mariadb connection. MUST BE ENDED WITH `mariadb.end()`
     def __init__(self, clean_tables: Union[None, List[str]] = []) -> None:
         self.loop = asyncio.get_event_loop()
-        if type(clean_tables) is str:
+        if type(clean_tables) is str: # If only one table is to be cleaned and the input is a string
             self.clean_tables = (clean_tables,)
         else:
             self.clean_tables = clean_tables
@@ -20,7 +23,7 @@ class mariadb:
         self.logger = logger("mariadb")
         self.aiomysql = aiomysql
         self.files = aiofiles
-        self.loop.run_until_complete(self.__ainit__())
+        self.loop.run_until_complete(self.__ainit__()) # Run the async init function
 
     async def __ainit__(self) -> None:
         self.pool = await self.generate_mariadb_pool()
@@ -30,11 +33,11 @@ class mariadb:
         self.cursor = await self.conn.cursor()
         self.logger.debug("Generated mariadb internal cursor")
         await self.init_mariadb()
-        if self.clean_tables is not None:
+        if self.clean_tables is not None: # If the clean_tables variable is requested
             await self.table_clean()
         await self.conn.commit()
 
-    def pool_to_cursor(self, func: Callable[..., Any]):
+    def pool_to_cursor(self, func: Callable[..., Any]): # Decorator which adds a cursor parameter to the function it is being called upon
         @self.functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any):
             conn = None
@@ -78,17 +81,17 @@ class mariadb:
 
     async def generate_mariadb_pool(self) -> aiomysql.pool.Pool:
         self.logger.info("Initializing mariadb")
-        pool = await self.aiomysql.create_pool(host='localhost',
-                                               port=3306,
-                                               user='root',
-                                               password='',
-                                               db='AtheismIndia_Stats',
-                                               autocommit=False,
-                                               minsize=1,
-                                               maxsize=450)
+        pool = await self.aiomysql.create_pool(host=os.getenv("DB_HOST"),
+                                               port=int(os.getenv("DB_PORT")),
+                                               user=os.getenv("DB_USER"),
+                                               password=os.getenv("DB_PASSWORD"),
+                                               db=os.getenv("DB_NAME"),
+                                               autocommit=False, # Autocommit is set to false so that the connection can be committed after the query is executed
+                                               minsize=1, # Minimum number of connections in the pool
+                                               maxsize=int(os.getenv("DB_CONNECTION_MAX_LIMIT")))
         return pool
 
-    async def end(self) -> None:
+    async def end(self) -> None: # Must be ended by calling this function
         self.logger.info("Closing mariadb connection")
         await self.cursor.close()
         self.logger.debug("Closed mariadb internal cursor")
@@ -109,7 +112,7 @@ class mariadb:
             return
         self.logger.info("Initialized mariadb tables")
 
-    async def table_clean(self) -> None:
+    async def table_clean(self) -> None: # Cleans the tables. Recommended to be used only in development. Recieves a list/tuple of tables to be cleaned
         self.logger.info("Cleaning tables")
         try:
             for table in self.clean_tables:
@@ -118,7 +121,7 @@ class mariadb:
             self.logger.critical("Failed to clean tables")
             self.logger.exception(e)
 
-    async def get_sql(self, name: str):
+    async def get_sql(self, name: str): # Gets the sql query from the sql folder
         self.logger.info(f"Getting sql query: {name}.sql")
         try:
             async with self.files.open(f"sql/{name}.sql", mode="r") as f:
@@ -128,4 +131,4 @@ class mariadb:
             self.logger.exception(e)
             return tuple()
         self.logger.info(f"Got sql query: {name}.sql")
-        return tuple(filter(lambda x: x != "", query.strip().split(";")))
+        return tuple(filter(lambda x: x != "", query.strip().split(";"))) # Returns a tuple of queries seperated by semicolons and removes empty lines

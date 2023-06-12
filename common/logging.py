@@ -10,12 +10,13 @@ except ImportError:
     import sys
     sys.path.append("..")
     from common.essential import essentials
-class logger:
+
+class logger: # Class which handles the logging
     def __init__(self, name: str = __name__):
         self.os = os
         self.logging = logging
         self.typing = typing
-        self.queue = queue.Queue(-1)
+        self.queue = queue.Queue(-1) # The logger runs in a seperate thread to not block the asyncio loop
         self.name = name
         self.queue_handler = self.logging.handlers.QueueHandler(self.queue)
         self.essentials = essentials
@@ -38,7 +39,7 @@ class logger:
             handler.setFormatter(formatter)
             handler.setLevel(level)
             handlers.append(handler)
-            if ENABLE_STREAM_HANDLER == "1":
+            if ENABLE_STREAM_HANDLER == "1": # Enable stream handler (Prints to console)
                 logger.propagate = True
             else:
                 logger.propagate = False
@@ -52,16 +53,20 @@ class logger:
             self.logging.exception(e)
             self.os.sys.exit(1)
         self.logger = logger
-        self.listener.start()
+        self.listener.start() # Start the listener
 
-    def __del__(self):
+    def __del__(self): # Stop the listener when the object is deleted
         try:
             self.listener.stop()
         except:
             pass
 
-    def handle(self, level: str, *args):
+    def handle(self, level: str, *args): # Handles the methods called
         exec(f"self.logger.{level}(*args)")
+
+###
+### The following methods are just wrappers for the handle method
+###
 
     def debug(self, *args):
         self.handle("debug", *args)
